@@ -1,0 +1,63 @@
+name: Import H5 v2.2 verified files
+on:
+  push:
+    paths:
+      - '.github/workflows/import-v22.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch exact v2.2 files from existing Cloudflare deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected-sha256.txt <<'CHECKS'
+          b9f3fa18f79798ec04e4c59387c34686e7713fe6b460aa1daffa94c6d8949059  index.html
+          31477a70b56d83236811bb3be5f2b8cf77b261d381ad0ca25a40bd737b0d3a06  assets/R00.png
+          752d21f976bf1f5c2fdf04b41527864610567d3f7921b6f733182db480dbf66e  assets/R00.webp
+          1426d0fc6a7107906cf06e693feb2ece12601f2d415ad17c891426632230c2f5  assets/R01.png
+          3df7a00e1a8bccd56579fd1d6798ccab26f812b358b1a481d566fb420e62e54b  assets/R01.webp
+          134749f81e4e933cd083812df4b0556d1806efdbe7490b8433726e87992e3f37  assets/R02.png
+          b3f443de8dcf22390d5643104296c90b659ff6ad67dadb3db3914ae2adbf0b8f  assets/R02.webp
+          61d2f39d26e67dffae8fc7b6e98cb8d724f3bd58952bb0ee7a85d90a843c9e00  assets/R03.png
+          d0b7886361f94a099d37e1f3f63cfbffc9bbdf28c2fe645518a4eade64ecbe51  assets/R03.webp
+          78b8dcb230b743b7dd3b131397dca363405a72ffc641e9a2563115773b97e445  assets/R04.png
+          a5c10bf67f74d45d59bfed7c0755c55d7b808e1a788390019294b873d2e24427  assets/R04.webp
+          6c26b13341c34c049c0b3ea9c2207b436361633c833b748a58310578504f2a2c  assets/R05.png
+          19b299ea8109651882aa1537f0261fbf27c1682cbad95c79c0644821b905512a  assets/R05.webp
+          78cf9b550cbd6320b70f871462dd4ec3838819c6ea03395de8d2726b78f82d7d  assets/R06.png
+          8c54eff8e1d939933b9e0e2069a3e048ea527aec2d35977d5cc08dc2616e5255  assets/R06.webp
+          ee7e1971942824a751e5a3ae315fee6d43f315a8dd8122ed605a11164f700a2a  assets/R07.png
+          a111aa849c24a388a585d29a7e28112e93a02fd13b1df149e68521d85a729dca  assets/R07.webp
+          6f26b34d0027e2caea9f84d866ac2b614a8138fd8540311b7a119667d5d6f450  assets/R08.png
+          821813b4678cf802650766468b598ddb0463c7d9962b2d3aadf04ef62089b1f7  assets/R08.webp
+          f1879f0c1924ad7fb0a6bc32723040e4e1548e01f7ccdd0082d27cda17365776  assets/R09.png
+          aeecd64ff532df7b09b4ded0c95b746dc11c75465eb2fd26cf8fc37f0e52573d  assets/R09.webp
+          936efdbb1e7c484e04943e8aa9009a19a8adbe5509b792e41c2cfef7fae18fc3  assets/R10.png
+          841fa9be9831a9953e14bdca6e17624faf12e9eebd36c80ca353cf8e1c3f4e5e  assets/R10.webp
+          bf42c3acfb4bb9f6aa2d8c04de7a4bfb1e8c6099e79b648d59841d2d043bc55a  assets/R11.png
+          ba38113ea293f1bed7529b36450d8e8fa3dcaf57fd0055eaf917f3aa28fbd526  assets/R11.webp
+          c5a74e9736d0dee917c60f6ee8989e9a4165b4f5bf7bda8c1aa789a604999ab6  assets/R12.png
+          e7c5857678e61748771db711303dc57775325ca9369a78013f90821dbc1eb5f5  assets/R12.webp
+          955426feea90b2041c788d445d444491aa2b0e4eddde635c916b5e77a71c0cbd  assets/R13.png
+          261e5136ed6bbf0687b24c74fbfbdb99201e6fc0c25005de3268ccaef64a65f3  assets/R13.webp
+          b3450a428ca6a8af4640386ff4bb5adc4d272777ce175f20b82afaf51ec0844d  assets/R14.png
+          84bd5a3b377e5309f7ebef3e9789ca5698c6e46e70bb7c299b47b9286b339cbf  assets/R14.webp
+          46edfd11611ff41cb96bf0d42d250f8e8dae418e638af21acec9bd3e17608510  assets/R15.png
+          7ecdabd2484726f5b8fd2fc1e8887c40672a1ae33d1924a3722c894540909db1  assets/R15.webp
+          319728a29221e1955a7b137c82e31a64cdb0b7a1b41d3e1a43d6652b3dbf7242  assets/family_portrait.png
+          CHECKS
+          while read -r hash path; do
+            mkdir -p "$(dirname "$path")"
+            curl --fail --show-error --silent --location --retry 3 --max-time 45 "https://abstract-mind-test.orangew15082368384.workers.dev/$path" -o "$path"
+          done < /tmp/expected-sha256.txt
+          sha256sum -c /tmp/expected-sha256.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets
+          git commit -m 'Import verified H5 v2.2 website and mascot assets'
+          git push origin HEAD:main
